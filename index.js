@@ -10,11 +10,19 @@ let opts = {
     LatitudeMin: 43.57601549736786,
     LatitudeMax: 43.602250137362276,
     PriceMin: 100000,
-    PriceMax: 410000,
-    CurrentPage: 1
+    PriceMax: 1000000,
+    RecordsPerPage: 100
 };
 
 app.get('/', (req, res) => {
+    res.send(realtor
+    .post(opts)
+    .then((data) => {
+        // console.log(data);
+        data.Results.map(result => console.log(result.Property.Price))
+    })
+    .catch((err) => {console.error(err.message)}));
+    
     res.send(
         realtor.optionsFromUrl(
             'https://www.realtor.ca/Residential/Map.aspx#LongitudeMin=-79.6758985519409&LongitudeMax=-79.6079635620117&LatitudeMin=43.57601549736786&LatitudeMax=43.602250137362276&PriceMin=100000&PriceMax=425000'
@@ -25,7 +33,7 @@ app.get('/', (req, res) => {
 realtor
     .post(opts)
     .then((data) => {
-        //console.log(data);
+        // console.log(data);
         data.Results.map(result => console.log(result.Property.Price))
     })
     .catch((err) => {console.error(err.message)});
