@@ -19,7 +19,7 @@ realtor
             console.log(result.Property.Address.AddressText);
             console.log('Bedrooms: ' + result.Building.Bedrooms);
             console.log('Bathrooms: ' + result.Building.BathroomTotal);
-            console.log('Bathrooms: ' + result.Building.Type);
+            console.log('Type: ' + result.Building.Type);
             console.log('Ammenities: ' + result.Property.AmmenitiesNearBy);
             console.log('Parking: '+ result.Property.ParkingSpaceTotal);
             console.log('Price: ' + result.Property.PriceUnformattedValue);
