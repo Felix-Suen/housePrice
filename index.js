@@ -1,7 +1,3 @@
-const express = require('express');
-const app = express();
-const port = 3000;
-
 const realtor = require('./realtorca.js');
 
 let opts = {
@@ -11,33 +7,23 @@ let opts = {
     LatitudeMax: 43.602250137362276,
     PriceMin: 100000,
     PriceMax: 1000000,
-    RecordsPerPage: 10,
-    // TotalPage: 45,
-    // Pins: 438,
-    // CurrentPage: 1,
+    RecordsPerPage: 100,
 };
 
 // console display
 realtor
     .post(opts)
     .then((data) => {
-        console.log(data);
-        // data.Results.map(result => console.log(result.Property))
+        // console.log(data);
+        data.Results.map(result => {
+            console.log(result.Property.Address.AddressText);
+            console.log('Bedrooms: ' + result.Building.Bedrooms);
+            console.log('Bathrooms: ' + result.Building.BathroomTotal);
+            console.log('Bathrooms: ' + result.Building.Type);
+            console.log('Ammenities: ' + result.Property.AmmenitiesNearBy);
+            console.log('Parking: '+ result.Property.ParkingSpaceTotal);
+            console.log('Price: ' + result.Property.PriceUnformattedValue);
+            console.log();
+        })
     })
     .catch((err) => {console.error(err.message)});
-
-
-// localhost:3000
-var test = {};
-
-realtor.post(opts).then((data) => {
-    test = data.Results.map(result => result.Property.Price)
-});
-
-app.get('/', (req, res)=> { 
-    res.send(test);
-})
-
-app.listen(port, () => {
-    console.log(`Testing app listening on port ${port}!`);
-});
