@@ -8,13 +8,13 @@ let opts = {
     LatitudeMax: 43.602250137362276,
     PriceMin: 500000,
     PriceMax: 10000000,
-    RecordsPerPage: 10,
+    RecordsPerPage: 50,
 };
 
 var excelData = [];
 var dimensions = [];
 
-async function excel() {
+async function excel(rows) {
     try {
         let workbook = new ExcelJS.Workbook();
         let worksheet = workbook.addWorksheet('test');
@@ -28,9 +28,9 @@ async function excel() {
         //     { header: 'Price', key: 'Price' },
         // ];
         // worksheet.getRow(1).font = { bold: true };
-        dimensions.forEach((row) => worksheet.addRow(row));
+        rows.forEach((row) => worksheet.addRow(row));
 
-        workbook.xlsx.writeFile('sample-size.xlsx');
+        workbook.xlsx.writeFile('sample.xlsx');
     } catch (err) {
         console.log(err.message);
     }
@@ -42,18 +42,19 @@ var options = {
 };
 
 realtor.post(opts).then((data) => {
-    data.Results.map((result) => {
+    dimensions = data.Results.map((result) => {
         options.PropertyId = result.Id;
         options.ReferenceNumber = result.MlsNumber;
-        realtor.getPropertyDetails(options).then((house) => {
-            let workbook = new ExcelJS.Workbook();
-            let worksheet = workbook.addWorksheet('test');
+        return realtor.getPropertyDetails(options).then((house) => {
             var row = house.Building.Room.map((room) => {
                 return room.Dimension;
             });
-            worksheet.addRow(row);
-            workbook.xlsx.writeFile('sample-size.xlsx');
-        });
+            return row;
+        })
+    });
+    Promise.all(dimensions).then((dimensions) => {
+        console.log(dimensions);
+        excel(dimensions);
     });
 });
 
