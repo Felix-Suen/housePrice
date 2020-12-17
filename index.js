@@ -20,6 +20,7 @@ async function excel() {
         worksheet.columns = [
             { header: 'Address', key: 'Address' },
             { header: 'Bedrooms', key: 'Bedrooms' },
+            { header: 'Den', key: 'Den' },
             { header: 'Bathrooms', key: 'Bathrooms' },
             { header: 'Type', key: 'Type' },
             { header: 'Parking', key: 'Parking' },
@@ -28,7 +29,7 @@ async function excel() {
         worksheet.getRow(1).font = { bold: true };
         excelData.forEach((row) => worksheet.addRow(row));
 
-        workbook.xlsx.writeFile('sample.xlsx');
+        workbook.xlsx.writeFile('sample-den.xlsx');
     } catch (err) {
         console.log(err.message);
     }
@@ -40,8 +41,10 @@ realtor
         excelData = data.Results.map((result) => {
             var bedrooms = result.Building.Bedrooms.split(" + ");
             var numBed = 0;
+            var den = 0;
             if (bedrooms.length > 1) {
-                numBed = parseInt(bedrooms[0]) + parseInt(bedrooms[1]);
+                numBed = parseInt(bedrooms[0])
+                den = parseInt(bedrooms[1]);
             } else {
                 numBed = parseInt(bedrooms[0]);
             }
@@ -57,6 +60,7 @@ realtor
             var row = [
                 result.Property.Address.AddressText,
                 numBed,
+                den,
                 parseInt(result.Building.BathroomTotal),
                 type,
                 parking,
