@@ -18,16 +18,8 @@ async function excel(rows) {
     try {
         let workbook = new ExcelJS.Workbook();
         let worksheet = workbook.addWorksheet('test');
-        // worksheet.columns = [
-        //     { header: 'Address', key: 'Address' },
-        //     { header: 'Bedrooms', key: 'Bedrooms' },
-        //     { header: 'Den', key: 'Den' },
-        //     { header: 'Bathrooms', key: 'Bathrooms' },
-        //     { header: 'Type', key: 'Type' },
-        //     { header: 'Parking', key: 'Parking' },
-        //     { header: 'Price', key: 'Price' },
-        // ];
-        const firstRow = ['Address', 'Price'];
+        // const firstRow = ['Address', 'Bedrooms', 'Den', 'Bathrooms', 'Type', 'Parking', 'Price'];
+        const firstRow = ['Address', 'Price', 'Total Size'];
         worksheet.addRow(firstRow);
         worksheet.getRow(1).font = { bold: true };
         rows.forEach((row) => worksheet.addRow(row));
@@ -53,6 +45,7 @@ realtor.post(opts).then((data) => {
                     var row = house.Building.Room.map((room) => {
                         return room.Dimension;
                     });
+                    row.unshift(house.Land.SizeTotal);
                     row.unshift(parseInt(house.Property.PriceUnformattedValue));
                     row.unshift(house.Property.Address.AddressText);
                     return row;
@@ -104,7 +97,7 @@ realtor.post(opts).then((data) => {
 //             console.log(row);
 //             return row;
 //         });
-//         excel();
+//         excel(excelData);
 //     })
 //     .catch((err) => {
 //         console.error(err.message);
