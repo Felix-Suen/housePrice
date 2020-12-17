@@ -8,7 +8,7 @@ let opts = {
     LatitudeMax: 43.602250137362276,
     PriceMin: 500000,
     PriceMax: 10000000,
-    RecordsPerPage: 50,
+    RecordsPerPage: 500,
 };
 
 var excelData = [];
@@ -27,7 +27,9 @@ async function excel(rows) {
         //     { header: 'Parking', key: 'Parking' },
         //     { header: 'Price', key: 'Price' },
         // ];
-        // worksheet.getRow(1).font = { bold: true };
+        const firstRow = ['Address', 'Price'];
+        worksheet.addRow(firstRow);
+        worksheet.getRow(1).font = { bold: true };
         rows.forEach((row) => worksheet.addRow(row));
 
         workbook.xlsx.writeFile('sample.xlsx');
@@ -42,20 +44,30 @@ var options = {
 };
 
 realtor.post(opts).then((data) => {
-    dimensions = data.Results.map((result) => {
-        options.PropertyId = result.Id;
-        options.ReferenceNumber = result.MlsNumber;
-        return realtor.getPropertyDetails(options).then((house) => {
-            var row = house.Building.Room.map((room) => {
-                return room.Dimension;
+    try {
+        dimensions = data.Results.map((result) => {
+            options.PropertyId = result.Id;
+            options.ReferenceNumber = result.MlsNumber;
+            return realtor.getPropertyDetails(options).then((house) => {
+                try {
+                    var row = house.Building.Room.map((room) => {
+                        return room.Dimension;
+                    });
+                    row.unshift(parseInt(house.Property.PriceUnformattedValue));
+                    row.unshift(house.Property.Address.AddressText);
+                    return row;
+                } catch (err) {
+                    console.error(err.message);
+                }
             });
-            return row;
-        })
-    });
-    Promise.all(dimensions).then((dimensions) => {
-        console.log(dimensions);
-        excel(dimensions);
-    });
+        });
+        Promise.all(dimensions).then((dimensions) => {
+            console.log(dimensions);
+            excel(dimensions);
+        });
+    } catch (err) {
+        console.error(err.message);
+    }
 });
 
 // realtor
