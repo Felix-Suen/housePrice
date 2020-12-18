@@ -8,7 +8,7 @@ let opts = {
     LatitudeMax: 43.602250137362276,
     PriceMin: 500000,
     PriceMax: 10000000,
-    RecordsPerPage: 500,
+    RecordsPerPage: 10,
 };
 
 var excelData = [];
@@ -19,7 +19,7 @@ async function excel(rows) {
         let workbook = new ExcelJS.Workbook();
         let worksheet = workbook.addWorksheet('test');
         // const firstRow = ['Address', 'Bedrooms', 'Den', 'Bathrooms', 'Type', 'Parking', 'Price'];
-        const firstRow = ['Address', 'Price', 'Total Size'];
+        const firstRow = ['Address', 'Price', 'type', 'Bedrooms', 'Bathrooms', 'Total Size'];
         worksheet.addRow(firstRow);
         worksheet.getRow(1).font = { bold: true };
         rows.forEach((row) => worksheet.addRow(row));
@@ -42,10 +42,32 @@ realtor.post(opts).then((data) => {
             options.ReferenceNumber = result.MlsNumber;
             return realtor.getPropertyDetails(options).then((house) => {
                 try {
+                    var totalSpace = 0;
                     var row = house.Building.Room.map((room) => {
-                        return room.Dimension;
+                        var space = room.Dimension.replace(/([' 'm])/g, '');
+                        if (space === '') space = 0;
+                        else {
+                            space = space.split('x');
+                            space = parseFloat(space[0]) * parseFloat(space[1]);
+                            space = Math.round(space * 100) / 100;
+                        }
+                        totalSpace += space;
+                        return space;
                     });
-                    row.unshift(house.Land.SizeTotal);
+                    row.unshift(totalSpace);
+                    // row.unshift(house.Land.SizeTotal);
+
+                    var bedrooms = house.Building.Bedrooms.split(' + ');
+                    var numBed = 0;
+                    if (bedrooms.length > 1) {
+                        numBed = parseInt(bedrooms[0]) + parseInt(bedrooms[1]);
+                    } else {
+                        numBed = parseInt(bedrooms[0]);
+                    }
+
+                    row.unshift(parseInt(house.Building.BathroomTotal));
+                    row.unshift(numBed);
+                    row.unshift(house.Building.Type);
                     row.unshift(parseInt(house.Property.PriceUnformattedValue));
                     row.unshift(house.Property.Address.AddressText);
                     return row;
