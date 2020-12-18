@@ -6,8 +6,8 @@ let opts = {
     LongitudeMax: -79.6079635620117,
     LatitudeMin: 43.57601549736786,
     LatitudeMax: 43.602250137362276,
-    PriceMin: 500000,
-    PriceMax: 10000000,
+    PriceMin: 1199900,
+    PriceMax: 1199900,
     RecordsPerPage: 10,
 };
 
@@ -44,18 +44,18 @@ realtor.post(opts).then((data) => {
                 try {
                     var totalSpace = 0;
                     var row = house.Building.Room.map((room) => {
-                        var space = room.Dimension.replace(/([' 'm])/g, '');
-                        if (space === '') space = 0;
-                        else {
-                            space = space.split('x');
-                            space = parseFloat(space[0]) * parseFloat(space[1]);
-                            space = Math.round(space * 100) / 100;
-                        }
-                        totalSpace += space;
+                        var space = room.Dimension.split('x');
+                        if (room.Dimension === '') space = 0;
+                        // else {
+                        //     space[0] = parseFloat(space[0].replace(/([' 'm])/g, ''));
+                        //     space[1] = parseFloat(space[1].replace(/([' 'm])/g, ''));
+                        //     space = space[0] * space[1];
+                        //     space = Math.round(space * 100) / 100; // round to 2 decimals
+                        // }
+                        // totalSpace += space;
                         return space;
                     });
                     row.unshift(totalSpace);
-                    // row.unshift(house.Land.SizeTotal);
 
                     var bedrooms = house.Building.Bedrooms.split(' + ');
                     var numBed = 0;
