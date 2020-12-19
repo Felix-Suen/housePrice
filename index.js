@@ -46,7 +46,7 @@ realtor.post(opts).then((data) => {
                     var row = house.Building.Room.map((room) => {
                         var space = room.Dimension.split('x');
                         if (room.Dimension === '') space = 0;
-                        else if (space[0].includes('\'')) {
+                        else if (space[0].includes('\'')) {         // imperial convert to metrics
                             space[0] = space[0].match(/\d+/g).map(Number);
                             space[1] = space[1].match(/\d+/g).map(Number);
                             if (space[0].length === 1) space[0] = (space[0][0] * 0.3048);
@@ -56,7 +56,7 @@ realtor.post(opts).then((data) => {
                             space = space[0] * space[1];
                             space = Math.round(space * 100) / 100;
                         }
-                        else {
+                        else {                                      // metrics
                             space[0] = parseFloat(space[0].replace(/([' 'm])/g, ''));
                             space[1] = parseFloat(space[1].replace(/([' 'm])/g, ''));
                             space = space[0] * space[1];
@@ -87,8 +87,9 @@ realtor.post(opts).then((data) => {
             });
         });
         Promise.all(dimensions).then((dimensions) => {
-            console.log(dimensions);
-            excel(dimensions);
+            const result = dimensions.filter(row => row !== undefined && row[5] !== 0);
+            console.log(result);
+            excel(result);
         });
     } catch (err) {
         console.error(err.message);
