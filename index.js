@@ -19,7 +19,14 @@ async function excel(rows) {
         let workbook = new ExcelJS.Workbook();
         let worksheet = workbook.addWorksheet('test');
         // const firstRow = ['Address', 'Bedrooms', 'Den', 'Bathrooms', 'Type', 'Parking', 'Price'];
-        const firstRow = ['Address', 'Price', 'type', 'Bedrooms', 'Bathrooms', 'Total Size'];
+        const firstRow = [
+            'Address',
+            'Price',
+            'type',
+            'Bedrooms',
+            'Bathrooms',
+            'Total Size',
+        ];
         worksheet.addRow(firstRow);
         worksheet.getRow(1).font = { bold: true };
         rows.forEach((row) => worksheet.addRow(row));
@@ -46,19 +53,30 @@ realtor.post(opts).then((data) => {
                     var row = house.Building.Room.map((room) => {
                         var space = room.Dimension.split('x');
                         if (room.Dimension === '') space = 0;
-                        else if (space[0].includes('\'')) {         // imperial convert to metrics
+                        else if (space[0].includes("'")) {
+                            // imperial convert to metrics
                             space[0] = space[0].match(/\d+/g).map(Number);
                             space[1] = space[1].match(/\d+/g).map(Number);
-                            if (space[0].length === 1) space[0] = (space[0][0] * 0.3048);
-                            else space[0] = (space[0][0] * 0.3048) + (space[0][1] * 0.0254);
-                            if (space[1].length === 1) space[1] = (space[1][0] * 0.3048);
-                            else space[1] = (space[1][0] * 0.3048) + (space[1][1] * 0.0254);
+                            if (space[0].length === 1)
+                                space[0] = space[0][0] * 0.3048;
+                            else
+                                space[0] =
+                                    space[0][0] * 0.3048 + space[0][1] * 0.0254;
+                            if (space[1].length === 1)
+                                space[1] = space[1][0] * 0.3048;
+                            else
+                                space[1] =
+                                    space[1][0] * 0.3048 + space[1][1] * 0.0254;
                             space = space[0] * space[1];
                             space = Math.round(space * 100) / 100;
-                        }
-                        else {                                      // metrics
-                            space[0] = parseFloat(space[0].replace(/([' 'm])/g, ''));
-                            space[1] = parseFloat(space[1].replace(/([' 'm])/g, ''));
+                        } else {
+                            // metrics
+                            space[0] = parseFloat(
+                                space[0].replace(/([' 'm])/g, '')
+                            );
+                            space[1] = parseFloat(
+                                space[1].replace(/([' 'm])/g, '')
+                            );
                             space = space[0] * space[1];
                             space = Math.round(space * 100) / 100; // round to 2 decimals
                         }
@@ -75,9 +93,12 @@ realtor.post(opts).then((data) => {
                         numBed = parseInt(bedrooms[0]);
                     }
 
+                    var type = 0;
+                    if (house.Building.Type === 'Apartment') type = 1;
+
                     row.unshift(parseInt(house.Building.BathroomTotal));
                     row.unshift(numBed);
-                    row.unshift(house.Building.Type);
+                    row.unshift(type);
                     row.unshift(parseInt(house.Property.PriceUnformattedValue));
                     row.unshift(house.Property.Address.AddressText);
                     return row;
@@ -87,7 +108,10 @@ realtor.post(opts).then((data) => {
             });
         });
         Promise.all(dimensions).then((dimensions) => {
-            const result = dimensions.filter(row => row !== undefined && row[5] > 0 && row[5] < 300);
+            // filter out unnecessary rows
+            const result = dimensions.filter(
+                (row) => row !== undefined && row[5] > 0 && row[5] < 300
+            );
             console.log(result);
             excel(result);
         });
