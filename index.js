@@ -87,7 +87,7 @@ realtor.post(opts).then((data) => {
             });
         });
         Promise.all(dimensions).then((dimensions) => {
-            const result = dimensions.filter(row => row !== undefined && row[5] !== 0);
+            const result = dimensions.filter(row => row !== undefined && row[5] > 0 && row[5] < 300);
             console.log(result);
             excel(result);
         });
