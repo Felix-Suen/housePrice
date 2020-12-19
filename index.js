@@ -19,14 +19,13 @@ async function excel(rows) {
     try {
         let workbook = new ExcelJS.Workbook();
         let worksheet = workbook.addWorksheet('test');
-        // const firstRow = ['Address', 'Bedrooms', 'Den', 'Bathrooms', 'Type', 'Parking', 'Price'];
         const firstRow = [
-            'Address',
-            'Price',
-            'type',
+            'Type',
             'Bedrooms',
-            'Bathrooms',
-            'Total Size',
+            'Badrooms',
+            'Total size',
+            'Price',
+            'Predicted'
         ];
         worksheet.addRow(firstRow);
         worksheet.getRow(1).font = { bold: true };
@@ -85,7 +84,7 @@ realtor.post(opts).then((data) => {
                         totalSpace += space;
                         // return space;
                     });
-                    row.unshift(Math.round(totalSpace * 100) / 100);
+                    
 
                     var bedrooms = house.Building.Bedrooms.split(' + ');
                     var numBed = 0;
@@ -98,10 +97,11 @@ realtor.post(opts).then((data) => {
                     var type = 0;
                     if (house.Building.Type === 'Apartment') type = 1;
 
-                    row.unshift(parseInt(house.Building.BathroomTotal));
-                    row.unshift(numBed);
-                    row.unshift(type);
-                    row.unshift(parseInt(house.Property.PriceUnformattedValue));
+                    row.push(type);
+                    row.push(numBed);
+                    row.push(parseInt(house.Building.BathroomTotal));
+                    row.push(Math.round(totalSpace * 100) / 100);
+                    row.push(parseInt(house.Property.PriceUnformattedValue));
                     // row.unshift(house.Property.Address.AddressText);
                     return row;
                 } catch (err) {
@@ -112,17 +112,29 @@ realtor.post(opts).then((data) => {
         Promise.all(dimensions).then((dimensions) => {
             // filter out unnecessary rows
             const result = dimensions.filter(
-                (row) => row !== undefined && row[4] > 0 && row[4] < 300
+                (row) => row !== undefined && row[3] > 0 && row[3] < 300
             );
+
+            // split the array for ML
             var price = [];
             result.map((house) => {
                 var priceArray = [];
-                priceArray.push(house[0]);
+                priceArray.push(house[4]);
                 price.push(priceArray);
-                house.shift();
+                house.pop();
             });
+
+            // ML
             const mlr = new MLR(result, price);
-            console.log(mlr.predict([1, 2, 2, 60]));
+
+            // put it back into excel rows
+            result.map((house, index) => {
+                house.push(price[index][0]);
+                var predict = mlr.predict(house)[0];
+                predict = Math.round(predict * 100) / 100
+                house.push(predict);
+            })
+
             excel(result);
         });
     } catch (err) {
