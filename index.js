@@ -1,5 +1,6 @@
 const realtor = require('./realtorca.js');
 const ExcelJS = require('exceljs');
+const MLR = require('ml-regression-multivariate-linear');
 
 let opts = {
     LongitudeMin: -79.6758985519409,
@@ -50,7 +51,8 @@ realtor.post(opts).then((data) => {
             return realtor.getPropertyDetails(options).then((house) => {
                 try {
                     var totalSpace = 0;
-                    var row = house.Building.Room.map((room) => {
+                    var row = [];
+                    house.Building.Room.map((room) => {
                         var space = room.Dimension.split('x');
                         if (room.Dimension === '') space = 0;
                         else if (space[0].includes("'")) {
@@ -81,7 +83,7 @@ realtor.post(opts).then((data) => {
                             space = Math.round(space * 100) / 100; // round to 2 decimals
                         }
                         totalSpace += space;
-                        return space;
+                        // return space;
                     });
                     row.unshift(Math.round(totalSpace * 100) / 100);
 
@@ -100,7 +102,7 @@ realtor.post(opts).then((data) => {
                     row.unshift(numBed);
                     row.unshift(type);
                     row.unshift(parseInt(house.Property.PriceUnformattedValue));
-                    row.unshift(house.Property.Address.AddressText);
+                    // row.unshift(house.Property.Address.AddressText);
                     return row;
                 } catch (err) {
                     console.error(err.message);
@@ -110,9 +112,17 @@ realtor.post(opts).then((data) => {
         Promise.all(dimensions).then((dimensions) => {
             // filter out unnecessary rows
             const result = dimensions.filter(
-                (row) => row !== undefined && row[5] > 0 && row[5] < 300
+                (row) => row !== undefined && row[4] > 0 && row[4] < 300
             );
-            console.log(result);
+            var price = [];
+            result.map((house) => {
+                var priceArray = [];
+                priceArray.push(house[0]);
+                price.push(priceArray);
+                house.shift();
+            });
+            const mlr = new MLR(result, price);
+            console.log(mlr.predict([1, 2, 2, 60]));
             excel(result);
         });
     } catch (err) {
